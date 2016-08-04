@@ -1,3 +1,7 @@
+civi_member_status:
+    resource: "@CiviMemberStatusBundle/Resources/config/routing.yml"
+    prefix:   /
+
 civi_cxn_db_cache:
     resource: "@CiviCxnDbCacheBundle/Resources/config/routing.yml"
     prefix:   /

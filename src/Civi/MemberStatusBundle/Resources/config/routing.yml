@@ -1,0 +1,3 @@
+civi_member_status_homepage:
+    path:     /hello/{name}
+    defaults: { _controller: CiviMemberStatusBundle:Default:index }
