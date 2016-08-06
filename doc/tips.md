@@ -18,6 +18,10 @@ parameters:
 (At time of writing, this isn't issue, but it could become an issue as
 the tool evolves.)
 
+## Interactive Console
+
+The [psysh](http://psysh.org/) project provides an interactive console
+for PHP applications. To use it with `cxnapp`, run `app/console repl`.
 
 ## From development to production
 
