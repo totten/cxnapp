@@ -1,0 +1,87 @@
+parameters:
+  ## memberships_source: static or csv or civicrmorg_http or civicrmorg_sql
+  memberships_negative_ttl: 30
+  memberships_positive_ttl: 3600
+
+doctrine:
+  dbal:
+    connections:
+      civicrmorg:
+        driver:   pdo_mysql
+        host:     "%civicrmorg_database_host%"
+        port:     "%civicrmorg_database_port%"
+        dbname:   "%civicrmorg_database_name%"
+        user:     "%civicrmorg_database_user%"
+        password: "%civicrmorg_database_password%"
+        charset:  UTF8
+
+doctrine_cache:
+  providers:
+    memberships_provider:
+      ## Why sqlite3? No extra installation; works in any single-server deployments; don't need high performance.
+      sqlite3:
+         file_name: '%kernel.cache_dir%/memberships.sqlite3'
+         table_name: 'cache_memberships'
+
+services:
+
+  memberships.checker:
+    class: Civi\MemberStatusBundle\MembershipChecker
+    calls:
+      - [setContainer, ['@service_container']]
+      - [setCache, ['@doctrine_cache.providers.memberships_provider']]
+      - [setSource, ['%memberships_source%']]
+      - [setNegativeTtl, ['%memberships_negative_ttl%']]
+      - [setPositiveTtl, ['%memberships_positive_ttl%']]
+
+  memberships.civicrmorg_http:
+    class: Civi\MemberStatusBundle\Reader\WebServiceReader
+    calls:
+      - [setUrl, ['https://cxn.civicrm.org/memberships']]
+      - [setToken, ['%civicrmorg_url_token%']]
+
+  ## Check memberships by sending SQL query to civicrm.org DB.
+  ## Query should return columns "url", "via_port", "is_active".
+  memberships.civicrmorg_sql:
+    class: Ddeboer\DataImport\Reader\DbalReader
+    arguments:
+      - @doctrine.dbal.civicrmorg_connection
+      - >
+        SELECT cstm.url AS url, null AS via_port, status.is_current_member AS is_active
+        FROM civicrm_membership m
+        INNER JOIN civicrm_membership_status status ON m.status_id = status.id
+        INNER JOIN civicrm_value_foo cstm ON cstm.entity_id = m.contact_id
+        WHERE cstm.url LIKE concat("%", :cxn_site_domain, "%")
+
+  ## Check memberships using a CSV file.
+  ## The file should have columns "url", "via_port", "is_active".
+  memberships.csv:
+    class: Ddeboer\DataImport\Reader\CsvReader
+    arguments:
+      - "%kernel.root_dir%/config/memberships.csv"
+
+  ## Check memberships using a built-in list of domains
+  memberships.static:
+    class: Ddeboer\DataImport\Reader\ArrayReader
+    arguments:
+      -
+        -
+          url: 'http://dmaster.l'
+          is_active: 1
+          via_port:
+        -
+          url: 'https://d46.l'
+          is_active: 1
+          via_port:
+        -
+          url: 'http://wpmaster.l'
+          is_active: 1
+          via_port:
+        -
+          url: 'http://wp46.l'
+          is_active: 1
+          via_port:
+        -
+          url: 'http://via-example-1.l'
+          is_active: 1
+          via_port: 'example-1.com:123'

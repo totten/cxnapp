@@ -17,3 +17,17 @@ parameters:
 
     # A secret key that's used to generate certain security-related tokens
     secret:            ThisTokenIsNotSoSecretChangeIt
+
+    ## The "membership" parameters can be used to lookup organizational memberships
+    ## with an external service.
+
+    ## Options: csv, static, civicrm_sql
+    memberships_source: memberships.static
+
+    ## (Optional) Determine memberships using a database query
+    civicrmorg_url_token: IGNORE
+    civicrmorg_database_host: IGNORE
+    civicrmorg_database_port: IGNORE
+    civicrmorg_database_name: IGNORE
+    civicrmorg_database_user: IGNORE
+    civicrmorg_database_password: IGNORE
