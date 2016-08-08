@@ -23,11 +23,7 @@ class ReaderHelper {
       throw new \RuntimeException("toReader() expects ReaderInterface or ReaderFactoryInterface. Found $class.");
     }
 
-    if ($reader instanceof \Civi\MemberStatusBundle\Reader\ParameterizedReaderInterface) {
-      $reader->setParameters($params);
-      return TRUE;
-    }
-    elseif ($reader instanceof \Ddeboer\DataImport\Reader\DbalReader) {
+    if ($reader instanceof \Ddeboer\DataImport\Reader\DbalReader) {
       $reader->setSqlParameters($params);
       return TRUE;
     }
