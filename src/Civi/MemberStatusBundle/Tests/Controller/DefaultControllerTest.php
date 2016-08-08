@@ -5,6 +5,7 @@ namespace Civi\MemberStatusBundle\Tests\Controller;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class DefaultControllerTest extends WebTestCase {
+
   public function testHealth() {
     $client = static::createClient();
     $client->request('GET', '/memberstatus/health');
@@ -13,4 +14,5 @@ class DefaultControllerTest extends WebTestCase {
       "ok memberships.static"
     );
   }
+
 }

@@ -34,4 +34,5 @@ class ReaderHelper {
 
     return $reader;
   }
+
 }

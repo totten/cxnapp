@@ -95,5 +95,4 @@ class WebServiceReader implements ReaderFactoryInterface {
     return $this;
   }
 
-
 }
