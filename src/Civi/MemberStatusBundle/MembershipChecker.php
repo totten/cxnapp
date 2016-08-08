@@ -1,7 +1,10 @@
 <?php
 namespace Civi\MemberStatusBundle;
 
+use Civi\MemberStatusBundle\Reader\ReaderFactoryInterface;
+use Civi\MemberStatusBundle\Reader\ReaderHelper;
 use Ddeboer\DataImport\Filter\CallbackFilter;
+use Ddeboer\DataImport\Reader\ArrayReader;
 use Ddeboer\DataImport\Reader\ReaderInterface;
 use Ddeboer\DataImport\Workflow;
 use Ddeboer\DataImport\Writer\ArrayWriter;
@@ -18,11 +21,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class MembershipChecker implements ContainerAwareInterface, MembershipCheckerInterface {
 
   /**
-   * @var \Doctrine\Common\Cache\Cache
-   */
-  protected $cache;
-
-  /**
    * @var ContainerInterface
    */
   protected $container;
@@ -31,18 +29,9 @@ class MembershipChecker implements ContainerAwareInterface, MembershipCheckerInt
    * @var string
    *
    * The name of a Symfony service which provides the list of memberships.
+   * The service should implement ReaderInterface or ReaderFactoryInterface.
    */
-  protected $source;
-
-  /**
-   * @var int
-   */
-  protected $negativeTtl = 600;
-
-  /**
-   * @var int
-   */
-  protected $positiveTtl = 600;
+  protected $sourceId;
 
   /**
    * Determine whether the given connection has an active membership.
@@ -67,19 +56,7 @@ class MembershipChecker implements ContainerAwareInterface, MembershipCheckerInt
    * @return bool
    */
   public function check($appId, $siteUrl, $viaPort) {
-    $key = md5(json_encode(array($appId, $siteUrl, $viaPort)));
-
-    if ($this->cache && $this->cache->contains($key)) {
-      $memberships = $this->cache->fetch($key);
-    }
-    else {
-      $memberships = $this->find($appId, $siteUrl, $viaPort);
-      if ($this->cache) {
-        $ttl = count($memberships) ? $this->positiveTtl : $this->negativeTtl;
-        $this->cache->save($key, $memberships, $ttl);
-      }
-    }
-
+    $memberships = $this->find($appId, $siteUrl, $viaPort);
     return count($memberships) > 0;
   }
 
@@ -91,26 +68,21 @@ class MembershipChecker implements ContainerAwareInterface, MembershipCheckerInt
    * @param string|NULL $viaPort
    *   Ex: 'proxy.example.com:789'
    * @return array
+   *   List of records. Each contains 'url', 'via_port', 'is_active'.
    */
   public function find($appId, $siteUrl, $viaPort) {
-    if (!$this->getSource()) {
+    if (!$this->getSourceId()) {
       throw new \RuntimeException("memberships_source is not configured");
     }
 
     /** @var ReaderInterface $reader */
-    $reader = $this->container->get($this->getSource());
-    $params = array(
-      'cxn_app_id' => $appId,
-      'cxn_site_url' => $siteUrl,
-      'cxn_via_port' => $viaPort,
+    $reader = ReaderHelper::toReader($this->container->get($this->getSourceId()),
+      array(
+        'cxn_app_id' => $appId,
+        'cxn_site_url' => $siteUrl,
+        'cxn_via_port' => $viaPort,
+      )
     );
-
-    if ($reader instanceof \Civi\MemberStatusBundle\Reader\ParameterizedReaderInterface) {
-      $reader->setParameters($params);
-    }
-    elseif ($reader instanceof \Ddeboer\DataImport\Reader\DbalReader) {
-      $reader->setSqlParameters($params);
-    }
 
     $workflow = new Workflow($reader);
 
@@ -142,19 +114,6 @@ class MembershipChecker implements ContainerAwareInterface, MembershipCheckerInt
     return $matches;
   }
 
-  /**
-   * @return \Doctrine\Common\Cache\Cache
-   */
-  public function getCache() {
-    return $this->cache;
-  }
-
-  /**
-   * @param \Doctrine\Common\Cache\Cache $cache
-   */
-  public function setCache($cache) {
-    $this->cache = $cache;
-  }
 
   public function setContainer(ContainerInterface $container = NULL) {
     $this->container = $container;
@@ -163,56 +122,17 @@ class MembershipChecker implements ContainerAwareInterface, MembershipCheckerInt
   /**
    * @return mixed
    */
-  public function getSource() {
-    return $this->source;
+  public function getSourceId() {
+    return $this->sourceId;
   }
 
   /**
-   * @param mixed $source
+   * @param mixed $sourceId
    * @return $this
    */
-  public function setSource($source) {
-    $this->source = $source;
+  public function setSourceId($sourceId) {
+    $this->sourceId = $sourceId;
     return $this;
-  }
-
-  /**
-   * @return int
-   */
-  public function getNegativeTtl() {
-    return $this->negativeTtl;
-  }
-
-  /**
-   * @param int $negativeTtl
-   */
-  public function setNegativeTtl($negativeTtl) {
-    $this->negativeTtl = $negativeTtl;
-  }
-
-  /**
-   * @return int
-   */
-  public function getPositiveTtl() {
-    return $this->positiveTtl;
-  }
-
-  /**
-   * @param int $positiveTtl
-   */
-  public function setPositiveTtl($positiveTtl) {
-    $this->positiveTtl = $positiveTtl;
-  }
-
-  /**
-   * @param $appId
-   * @param $siteUrl
-   * @param $viaPort
-   * @return object
-   */
-  public function createReader($appId, $siteUrl, $viaPort) {
-
-    return $reader;
   }
 
 }

@@ -2,3 +2,7 @@ services:
 #    civi_member_status.example:
 #        class: Civi\MemberStatusBundle\Example
 #        arguments: [@service_id, "plain_value", %parameter%]
+
+  memberships.default_controller:
+    class: Civi\MemberStatusBundle\Controller\DefaultController
+    arguments: ['@service_container', '@memberships.checker']

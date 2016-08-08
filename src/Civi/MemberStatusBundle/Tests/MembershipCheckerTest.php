@@ -1,20 +1,15 @@
 <?php
 namespace Civi\MemberStatusBundle\Tests;
 
-use Doctrine\Common\Cache\ArrayCache;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class MembershipCheckerTest extends WebTestCase {
 
   public function testStaticType() {
-    $kernel = $this->createKernel();
-    $kernel->boot();
-    $container = $kernel->getContainer();
+    $container = $this->createContainer();
     /** @var \Civi\MemberStatusBundle\MembershipChecker $checker */
     $checker = $container->get('memberships.checker');
-
-    $checker->setCache(new ArrayCache());
-    $checker->setSource('memberships.static');
+    $checker->setSourceId('memberships.static');
 
     $this->assertTrue($checker->check('app:org.civicrm.foo', 'http://dmaster.l/sites/all/modules/civicrm/extern/cxn.php', NULL));
     $this->assertTrue($checker->check('app:org.civicrm.foo', 'https://dmaster.l/sites/all/modules/civicrm/extern/cxn.php', NULL));
@@ -27,6 +22,45 @@ class MembershipCheckerTest extends WebTestCase {
     $this->assertTrue($checker->check('app:org.civicrm.foo', 'http://via-example-1.l/sites/all/modules/civicrm/extern/cxn.php', NULL));
     $this->assertTrue($checker->check('app:org.civicrm.foo', 'http://via-example-1.l/sites/all/modules/civicrm/extern/cxn.php', 'example-1.com:123'));
     $this->assertFalse($checker->check('app:org.civicrm.foo', 'http://via-example-1.l/sites/all/modules/civicrm/extern/cxn.php', 'example-2.com:123'));
+  }
+
+  public function getWebSourceIds() {
+    return array(
+      array('memberships.civicrmorg_http_uncached'),
+      array('memberships.civicrmorg_http'),
+    );
+  }
+
+  /**
+   * @param string $webServiceId
+   *   Ex: "memberships.civicrmor_http"
+   * @dataProvider getWebSourceIds
+   */
+  public function testWebRoundtrip($webServiceId) {
+    // Create a MembershipChecker which reads from our web service.
+    $downstreamContainer = $this->createContainer();
+    /** @var \Civi\MemberStatusBundle\MembershipChecker $downstreamChecker */
+    $downstreamContainer->get('memberships.civicrmorg_http_uncached')
+      ->setUrl('/memberstatus/find')
+      ->setHttp($this->createClient());
+    $downstreamChecker = $downstreamContainer->get('memberships.checker');
+    $downstreamChecker->setSourceId($webServiceId);
+
+    // Check that downstream gets the data from upstream.
+    $this->assertTrue($downstreamChecker->check('app:org.civicrm.foo', 'http://dmaster.l/sites/all/modules/civicrm/extern/cxn.php', NULL));
+    $this->assertTrue($downstreamChecker->check('app:org.civicrm.foo', 'https://dmaster.l/sites/all/modules/civicrm/extern/cxn.php', NULL));
+    $this->assertFalse($downstreamChecker->check('app:org.civicrm.foo', 'http://dmaster.l/sites/all/modules/civicrm/extern/cxn.php', 'via-example.com:123'));
+    $this->assertFalse($downstreamChecker->check('app:org.civicrm.foo', 'http://snickerdoodle.com/dmaster.l/sites/all/modules/civicrm/extern/cxn.php', NULL));
+  }
+
+  /**
+   * @return \Symfony\Component\DependencyInjection\ContainerInterface
+   */
+  protected function createContainer() {
+    $kernel = $this->createKernel();
+    $kernel->boot();
+    $container = $kernel->getContainer();
+    return $container;
   }
 
 }

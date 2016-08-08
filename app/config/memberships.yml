@@ -1,7 +1,6 @@
 parameters:
-  ## memberships_source: static or csv or civicrmorg_http or civicrmorg_sql
-  memberships_negative_ttl: 30
-  memberships_positive_ttl: 3600
+  ## memberships_source: "memberships.static", "memberships.csv", "memberships.civicrmorg_http" or "memberships.civicrmorg_sql"
+  memberships_ttl: 180
 
 doctrine:
   dbal:
@@ -24,20 +23,22 @@ doctrine_cache:
          table_name: 'cache_memberships'
 
 services:
-
   memberships.checker:
     class: Civi\MemberStatusBundle\MembershipChecker
     calls:
       - [setContainer, ['@service_container']]
-      - [setCache, ['@doctrine_cache.providers.memberships_provider']]
-      - [setSource, ['%memberships_source%']]
-      - [setNegativeTtl, ['%memberships_negative_ttl%']]
-      - [setPositiveTtl, ['%memberships_positive_ttl%']]
+      - [setSourceId, ['%memberships_source%']]
 
+  ## Check memberships by sending HTTP query to civicrm.org DB (with caching).
   memberships.civicrmorg_http:
+    class: Civi\MemberStatusBundle\Reader\CachedReaderFactory
+    arguments: ['@memberships.civicrmorg_http_uncached', '@doctrine_cache.providers.memberships_provider', '%memberships_ttl%']
+
+  ## Check memberships by sending HTTP query to civicrm.org DB (without caching).
+  memberships.civicrmorg_http_uncached:
     class: Civi\MemberStatusBundle\Reader\WebServiceReader
     calls:
-      - [setUrl, ['https://cxn.civicrm.org/memberships']]
+      - [setUrl, ['https://cxn.civicrm.org/memberstatus/find']]
       - [setToken, ['%civicrmorg_url_token%']]
 
   ## Check memberships by sending SQL query to civicrm.org DB.
@@ -61,6 +62,7 @@ services:
       - "%kernel.root_dir%/config/memberships.csv"
 
   ## Check memberships using a built-in list of domains
+  ## This should have columns "url", "via_port", "is_active".
   memberships.static:
     class: Ddeboer\DataImport\Reader\ArrayReader
     arguments:
