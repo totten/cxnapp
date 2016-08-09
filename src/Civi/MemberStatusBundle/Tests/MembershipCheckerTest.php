@@ -24,7 +24,19 @@ class MembershipCheckerTest extends WebTestCase {
     $this->assertFalse($checker->check('app:org.civicrm.foo', 'http://via-example-1.l/sites/all/modules/civicrm/extern/cxn.php', 'example-2.com:123'));
   }
 
-  public function testCivicrmOrgSql() {
+  public function getSqlSourceIds() {
+    return array(
+      array('memberships.civicrmorg_sql_uncached'),
+      array('memberships.civicrmorg_sql'),
+    );
+  }
+
+  /**
+   * @param string $sqlServiceId
+   *   Ex: 'memberships.civicrmorg_sql'.
+   * @dataProvider getSqlSourceIds
+   */
+  public function testCivicrmOrgSql($sqlServiceId) {
     $container = $this->createContainer();
 
     if (!$container->hasParameter('civicrmorg_database_name')
@@ -36,7 +48,7 @@ class MembershipCheckerTest extends WebTestCase {
 
     /** @var \Civi\MemberStatusBundle\MembershipChecker $checker */
     $checker = $container->get('memberships.checker');
-    $checker->setSourceId('memberships.civicrmorg_sql');
+    $checker->setSourceId($sqlServiceId);
 
     $this->assertTrue($checker->check('app:org.civicrm.foo', 'http://civicrm.org/sites/all/modules/civicrm/extern/cxn.php', NULL));
     $this->assertTrue($checker->check('app:org.civicrm.foo', 'https://civicrm.org/sites/all/modules/civicrm/extern/cxn.php', NULL));

@@ -41,9 +41,14 @@ services:
       - [setUrl, ['https://cxn.civicrm.org/memberstatus/find']]
       - [setToken, ['%civicrmorg_url_token%']]
 
+  ## Check memberships by sending HTTP query to civicrm.org DB (with caching).
+  memberships.civicrmorg_sql:
+    class: Civi\MemberStatusBundle\Reader\CachedReaderFactory
+    arguments: ['@memberships.civicrmorg_sql_uncached', '@doctrine_cache.providers.memberships_provider', '%memberships_ttl%']
+
   ## Check memberships by sending SQL query to civicrm.org DB.
   ## Query should return columns "url", "via_port", "is_active".
-  memberships.civicrmorg_sql:
+  memberships.civicrmorg_sql_uncached:
     class: Civi\MemberStatusBundle\Reader\CivicrmSqlReader
     arguments:
       - @doctrine.dbal.civicrmorg_connection
