@@ -69,6 +69,10 @@ class MembershipCheckerTest extends WebTestCase {
    * @dataProvider getWebSourceIds
    */
   public function testWebRoundtrip($webServiceId) {
+    // FIXME: Re-enable route "/memberstatus/find".
+    // FIXME: Update WebServiceReader, etal, to support authentication.
+    $this->markTestIncomplete("testWebRoundtrip is disabled");
+
     // Create a MembershipChecker which reads from our web service.
     $downstreamContainer = $this->createContainer();
     /** @var \Civi\MemberStatusBundle\MembershipChecker $downstreamChecker */

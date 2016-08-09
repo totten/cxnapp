@@ -1,7 +1,7 @@
-civi_member_status_check:
-    path:     /memberstatus/find
-    defaults:
-      _controller: memberships.default_controller:findAction
+#civi_member_status_check:
+#    path:     /memberstatus/find
+#    defaults:
+#      _controller: memberships.default_controller:findAction
 
 civi_member_status_health:
     path:     /memberstatus/health
