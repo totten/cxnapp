@@ -52,3 +52,26 @@ table can be read from different sources:
 
 To choose specify which source you want to use, edit `app/config/parameters.yml`
 and specify `memberships_source`.
+
+## Tip: Working with `memberships.civicrmorg_sql`
+
+This data-source reads entries from the `civicrm.org` MySQL database. If
+developing/testing/using this data-source, you will need a few things:
+
+ * In `parameters.yml`, define the connection details:
+   * `civicrmorg_database_host`
+   * `civicrmorg_database_port`
+   * `civicrmorg_database_name`
+   * `civicrmorg_database_user`
+   * `civicrmorg_database_password`
+ * Create a SQL view named `cxn_member_urls`, e.g.
+
+```sql
+CREATE VIEW cxn_member_urls
+SELECT cstm.member_site_216 AS url, null AS via_port, status.is_current_member AS is_active
+FROM civicrm_membership m
+INNER JOIN civicrm_membership_status status ON m.status_id = status.id
+INNER JOIN civicrm_value_sid_22 cstm ON cstm.entity_id = m.contact_id
+```
+
+This view should return three columns (`url`, `via_port`, and `is_active`).

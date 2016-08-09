@@ -23,11 +23,6 @@ class ReaderHelper {
       throw new \RuntimeException("toReader() expects ReaderInterface or ReaderFactoryInterface. Found $class.");
     }
 
-    if ($reader instanceof \Ddeboer\DataImport\Reader\DbalReader) {
-      $reader->setSqlParameters($params);
-      return TRUE;
-    }
-
     return $reader;
   }
 
