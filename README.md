@@ -25,3 +25,4 @@ be used as a base for developing more substantial applications.
  * [Certificate Revocation List (crl)](src/Civi/Cxn/CrlBundle/README.md)
  * [Site Profiles (org.civicrm.profile)](src/Civi/Cxn/ProfileBundle/README.md)
  * [Cron (org.civicrm.cron)](src/Civi/Cxn/CronBundle/README.md)
+ * [Member Status](src/Civi/MemberStatusBundle/README.md)
