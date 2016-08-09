@@ -61,6 +61,8 @@ class MembershipChecker implements ContainerAwareInterface, MembershipCheckerInt
   }
 
   /**
+   * Find any memberships which match the given site_url (etal).
+   *
    * @param string $appId
    *   Ex: 'app:org.civicrm.profile'.
    * @param string $siteUrl
@@ -68,7 +70,7 @@ class MembershipChecker implements ContainerAwareInterface, MembershipCheckerInt
    * @param string|NULL $viaPort
    *   Ex: 'proxy.example.com:789'
    * @return array
-   *   List of records. Each contains 'url', 'via_port', 'is_active'.
+   *   List of memberships. Each contains 'url', 'via_port', 'is_active'.
    */
   public function find($appId, $siteUrl, $viaPort) {
     if (!$this->getSourceId()) {
@@ -114,9 +116,13 @@ class MembershipChecker implements ContainerAwareInterface, MembershipCheckerInt
     return $matches;
   }
 
-
+  /**
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface|NULL $container
+   * @return $this
+   */
   public function setContainer(ContainerInterface $container = NULL) {
     $this->container = $container;
+    return $this;
   }
 
   /**
