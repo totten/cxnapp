@@ -50,8 +50,8 @@ table can be read from different sources:
  * `memberships.civicrmorg_sql` (the `civicrm.org` SQL database)
  * ~~`memberships.civicrmorg_http` (an HTTP service from `civicrm.org`)~~ (WIP)
 
-To choose specify which source you want to use, edit `app/config/parameters.yml`
-and specify `memberships_source`.
+To specify which source you want to use, edit `app/config/parameters.yml`
+and set `memberships_source`.
 
 ## Tip: Working with `memberships.civicrmorg_sql`
 
