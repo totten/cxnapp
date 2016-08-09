@@ -18,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * The MembershipChecker service is used to determine whether a given
  * connection (appId/siteUrl/viaPort)
  */
-class MembershipChecker implements ContainerAwareInterface, MembershipCheckerInterface {
+class MembershipChecker implements ContainerAwareInterface {
 
   /**
    * @var ContainerInterface
