@@ -1,8 +1,8 @@
 # cxnapp (MemberStatusBundle)
 
 CiviCRM is supported through membership and partner programs.
-To encourage organizations to participate as members and partners,
-some `cxnapp` services may offer/adapt services based one's membership.
+To encourage organizations to participate as members and partners, some
+`cxnapp` services may offer/adapt services based on one's membership.
 
 The `MemberStatusBundle` provides a utility to determine whether
 a given connection corresponds to a member site, e.g.
