@@ -74,3 +74,7 @@ FROM civicrm_membership m
 INNER JOIN civicrm_membership_status status ON m.status_id = status.id
 INNER JOIN civicrm_value_sid_22 cstm ON cstm.entity_id = m.contact_id
 ```
+
+## See Also
+
+ * [ddeboer/data-mport](https://github.com/ddeboer/data-import): To abstract the differences between `memberships.static`, `memberships.csv`, `memberships.civicrmorg_sql`, etc, this bundle uses the [Ddeboer Data Import](https://github.com/ddeboer/data-import) library, which provides `Reader` and `Filter` classes.
